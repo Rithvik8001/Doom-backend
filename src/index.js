@@ -1,22 +1,15 @@
 const express = require("express");
 const app = express();
 const { connectDB } = require("./config/database");
+const { authRouter } = require("./routes/auth");
+app.use(express.json());
+require("dotenv").config();
 
-app.use("/api/users", (req, res) => {
-  res.send("Hello World from the users route");
-});
-
-app.use("/api/users/:id", (req, res) => {
-  res.send(`Hello World from the users route with id ${req.params.id}`);
-});
-
-app.use("/api", (req, res) => {
-  res.send("Hello World from the server");
-});
+app.use("/", authRouter);
 
 // Database connection and listen to the port 3001.
 connectDB().then(() => {
-  console.log("MongoDB connected");
+  console.log("Database connected");
   app.listen(3001, () => {
     console.log("Server is successfully listening on port 3001");
   });
