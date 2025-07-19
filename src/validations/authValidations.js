@@ -76,4 +76,29 @@ const signUpValidation = (req, res, next) => {
   }
 };
 
-module.exports = { signUpValidation };
+const loginValidation = async (req, res, next) => {
+  const { emailId, password } = req.body;
+  const allowedFields = ["emailId", "password"];
+
+  const extraFields = Object.keys(req.body).filter(
+    (field) => !allowedFields.includes(field)
+  );
+
+  if (extraFields.length > 0) {
+    return res.status(400).json({
+      message: `Invalid fields detected: ${extraFields.join(
+        ", "
+      )}. Only ${allowedFields.join(", ")} are allowed.`,
+    });
+  }
+  if (!emailId || !password) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  if (!validator.isEmail(emailId)) {
+    return res.status(400).json({ message: "Invalid email address" });
+  }
+
+  next();
+};
+module.exports = { signUpValidation, loginValidation };
