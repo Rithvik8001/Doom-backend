@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connectDB } = require("./config/database");
 const { authRouter } = require("./routes/auth");
+const { profileRouter } = require("./routes/profile");
 
 app.use(cookieParser());
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use(
 );
 
 app.use("/", authRouter);
+app.use("/", profileRouter);
 
 // Database connection and listen to the port 3001.
 connectDB()
