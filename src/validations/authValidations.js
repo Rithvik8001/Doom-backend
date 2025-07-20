@@ -101,4 +101,5 @@ const loginValidation = async (req, res, next) => {
 
   next();
 };
+
 module.exports = { signUpValidation, loginValidation };

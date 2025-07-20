@@ -58,7 +58,7 @@ authRouter.post("/api/auth/login", loginValidation, async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -79,4 +79,14 @@ authRouter.post("/api/auth/login", loginValidation, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+authRouter.post("/api/auth/logout", async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = { authRouter };
