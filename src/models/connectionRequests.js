@@ -25,6 +25,10 @@ const connectionRequestSchema = new Schema(
   { timestamps: true }
 );
 
+// Indexing the connection requests to make the search faster.{ 1->ascending, -1->descending}
+
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 }, { unique: true });
+
 const ConnectionRequests = mongoose.model(
   "ConnectionRequests",
   connectionRequestSchema

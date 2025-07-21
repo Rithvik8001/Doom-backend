@@ -66,4 +66,66 @@ requestsRouter.post(
   }
 );
 
+// Route to accept/reject a connection request received from another user
+requestsRouter.post(
+  "/api/request/received/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInUserId = req.user._id;
+      const { status, requestId } = req.params;
+
+      const allowedStatus = ["accepted", "rejected"];
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      if (!mongoose.Types.ObjectId.isValid(requestId)) {
+        return res.status(400).json({ message: "Invalid request" });
+      }
+
+      // First, let's find the request by ID to see if it exists
+      const connectionRequest = await ConnectionRequests.findById(requestId);
+      if (!connectionRequest) {
+        return res
+          .status(400)
+          .json({ message: "Request not found with this ID" });
+      }
+
+      // Check if the logged-in user is the receiver of this request
+      if (connectionRequest.toUserId.toString() !== loggedInUserId.toString()) {
+        return res.status(400).json({
+          message: "You can only respond to requests sent to you",
+          requestToUserId: connectionRequest.toUserId,
+          loggedInUserId: loggedInUserId,
+        });
+      }
+
+      // Check if the request is in interested status
+      if (connectionRequest.status !== "interested") {
+        return res.status(400).json({
+          message: `Cannot ${status} request. Current status is: ${connectionRequest.status}`,
+        });
+      }
+
+      // Get the user who sent the request for the response message
+      const fromUser = await User.findById(connectionRequest.fromUserId);
+      if (!fromUser) {
+        return res.status(400).json({ message: "Sender user not found" });
+      }
+
+      connectionRequest.status = status;
+      const data = await connectionRequest.save();
+      return res.status(200).json({
+        message:
+          status === "accepted"
+            ? `Request from ${fromUser.firstName} ${fromUser.lastName} accepted successfully`
+            : `Request from ${fromUser.firstName} ${fromUser.lastName} rejected successfully`,
+        data,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
 module.exports = { requestsRouter };
